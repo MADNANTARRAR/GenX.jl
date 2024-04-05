@@ -14,6 +14,7 @@ genx_setup = Dict(
     "StorageLosses" => 1,
     "HydrogenHourlyMatching" => 1,
     "ParameterScale" => 1,
+    "HydrogenMimimumProduction"=>1
 )
 
 # Run the case and get the objective value and tolerance
