@@ -25,7 +25,7 @@ function write_costs(path::AbstractString, inputs::Dict, setup::Dict, EP::Model)
 	if !isempty(VRE_STOR)
 		push!(cost_list, "cGridConnection")
 	end
-	if !isempty(ELECTROLYZER)
+	if (setup["HydrogenMimimumProduction"] > 0) & (!isempty(ELECTROLYZER))
 		push!(cost_list, "cHydrogenRevenue")
 	end
 	dfCost = DataFrame(Costs = cost_list)
@@ -47,7 +47,7 @@ function write_costs(path::AbstractString, inputs::Dict, setup::Dict, EP::Model)
 		total_cost = [value(EP[:eObj]), cFix, cVar, cFuel, value(EP[:eTotalCNSE]), 0.0, 0.0, 0.0, 0.0, 0.0]
 	end
 
-	if !isempty(ELECTROLYZER)
+	if (setup["HydrogenMimimumProduction"] > 0) & (!isempty(ELECTROLYZER))
 		push!(total_cost,(!isempty(inputs["ELECTROLYZER"]) ? -1*value(EP[:eTotalHydrogenValue]) : 0.0))
 	end
 

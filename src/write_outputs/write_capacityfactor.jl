@@ -46,7 +46,7 @@ function write_capacityfactor(path::AbstractString, inputs::Dict, setup::Dict, E
     CF_GEN = intersect(union(THERM_ALL, VRE, HYDRO_RES, MUST_RUN, VRE_STOR), EXISTING)
     dfCapacityfactor.CapacityFactor[CF_GEN] .= (dfCapacityfactor.AnnualSum[CF_GEN] ./ dfCapacityfactor.Capacity[CF_GEN]) / sum(inputs["omega"][t] for t in 1:T)
     # Capacity factor for electrolyzers is based on vUSE variable not vP
-    if (!isempty(ELECTROLYZER))
+    if (setup["HydrogenMimimumProduction"] > 0) & (!isempty(ELECTROLYZER))
         dfCapacityfactor.AnnualSum[ELECTROLYZER] .= value.(EP[:vUSE][ELECTROLYZER, :]).data * inputs["omega"] * scale_factor
         dfCapacityfactor.CapacityFactor[ELECTROLYZER] .= (dfCapacityfactor.AnnualSum[ELECTROLYZER] ./ dfCapacityfactor.Capacity[ELECTROLYZER]) / sum(inputs["omega"][t] for t in 1:T)
     end
