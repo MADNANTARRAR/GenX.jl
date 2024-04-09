@@ -4,7 +4,6 @@ using Logging
 
 include("utilities.jl")
 
-
 @testset "Expr manipulation" begin
     include("expression_manipulation_test.jl")
 end
@@ -16,7 +15,7 @@ if VERSION ≥ v"1.7"
 end
 
 # Test GenX modules
-@testset verbose = true "GenX modules" begin
+@testset verbose=true "GenX modules" begin
     @testset "Three zones" begin
         include("test_threezones.jl")
     end
@@ -51,5 +50,9 @@ end
 
     @testset "Compute Conflicts" begin
         include("test_compute_conflicts.jl")
+    end
+
+    @testset "Retrofit" begin
+        include("test_retrofit.jl")
     end
 end

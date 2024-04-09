@@ -8,8 +8,7 @@ obj_true = 6946.9618
 test_path = "electrolyzer"
 
 # Define test inputs
-genx_setup = Dict(
-    "Trans_Loss_Segments" => 1,
+genx_setup = Dict("Trans_Loss_Segments" => 1,
     "UCommit" => 2,
     "StorageLosses" => 1,
     "HydrogenHourlyMatching" => 1,
@@ -27,7 +26,7 @@ optimal_tol_rel = get_attribute(EP, "ipm_optimality_tolerance")
 optimal_tol = optimal_tol_rel * obj_test  # Convert to absolute tolerance
 
 # Test the objective value
-test_result = @test obj_test ≈ obj_true atol = optimal_tol
+test_result = @test obj_test≈obj_true atol=optimal_tol
 
 # Round objective value and tolerance. Write to test log.
 obj_test = round_from_tol!(obj_test, optimal_tol)

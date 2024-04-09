@@ -68,8 +68,8 @@ function electrolyzer!(EP::Model, inputs::Dict, setup::Dict)
 	omega = inputs["omega"]
 	gen = inputs["RESOURCES"]
 
-	T = inputs["T"]     # Number of time steps (hours)
-	Z = inputs["Z"]     # Number of zones
+    T = inputs["T"]     # Number of time steps (hours)
+    Z = inputs["Z"]     # Number of zones
 
 	ELECTROLYZERS = inputs["ELECTROLYZER"]      # Set of electrolyzers connected to the grid (indices)
 	VRE_STOR = inputs["VRE_STOR"] 	            # Set of VRE-STOR generators (indices)
@@ -93,44 +93,53 @@ function electrolyzer!(EP::Model, inputs::Dict, setup::Dict)
 	by_rid(rid, sym) = by_rid_res(rid, sym, gen_VRE_STOR)
 	### Variables ###
 
-	# Electrical energy consumed by electrolyzer resource "y" at hour "t"
-	@variable(EP, vUSE[y=ELECTROLYZERS, t in 1:T] >=0);
+    # Electrical energy consumed by electrolyzer resource "y" at hour "t"
+    @variable(EP, vUSE[y = ELECTROLYZERS, t in 1:T]>=0)
 
-	### Expressions ###
+    ### Expressions ###
 
-	## Power Balance Expressions ##
+    ## Power Balance Expressions ##
 
-	@expression(EP, ePowerBalanceElectrolyzers[t in 1:T, z in 1:Z],
-	sum(EP[:vUSE][y,t] for y in intersect(ELECTROLYZERS, resources_in_zone_by_rid(gen,z))))
+    @expression(EP, ePowerBalanceElectrolyzers[t in 1:T, z in 1:Z],
+        sum(EP[:vUSE][y, t]
+            for y in intersect(ELECTROLYZERS, resources_in_zone_by_rid(gen, z))))
 
-	# Electrolyzers consume electricity so their vUSE is subtracted from power balance
-	EP[:ePowerBalance] -= ePowerBalanceElectrolyzers
+    # Electrolyzers consume electricity so their vUSE is subtracted from power balance
+    EP[:ePowerBalance] -= ePowerBalanceElectrolyzers
 
-	# Capacity Reserves Margin policy
-	## Electrolyzers currently do not contribute to capacity reserve margin. Could allow them to contribute as a curtailable demand in future.
+    # Capacity Reserves Margin policy
+    ## Electrolyzers currently do not contribute to capacity reserve margin. Could allow them to contribute as a curtailable demand in future.
 
-	### Constraints ###
+    ### Constraints ###
 
-	### Maximum ramp up and down between consecutive hours (Constraints #1-2)
-	@constraints(EP, begin
-		## Maximum ramp up between consecutive hours
-        [y in ELECTROLYZERS, t in 1:T], EP[:vUSE][y,t] - EP[:vUSE][y, hoursbefore(p,t,1)] <= ramp_up_fraction(gen[y])*EP[:eTotalCap][y]
+    ### Maximum ramp up and down between consecutive hours (Constraints #1-2)
+    @constraints(EP,
+        begin
+            ## Maximum ramp up between consecutive hours
+            [y in ELECTROLYZERS, t in 1:T],
+            EP[:vUSE][y, t] - EP[:vUSE][y, hoursbefore(p, t, 1)] <=
+            ramp_up_fraction(gen[y]) * EP[:eTotalCap][y]
 
-		## Maximum ramp down between consecutive hours
-		[y in ELECTROLYZERS, t in 1:T], EP[:vUSE][y, hoursbefore(p,t,1)] - EP[:vUSE][y,t] <= ramp_down_fraction(gen[y])*EP[:eTotalCap][y]
-	end)
+            ## Maximum ramp down between consecutive hours
+            [y in ELECTROLYZERS, t in 1:T],
+            EP[:vUSE][y, hoursbefore(p, t, 1)] - EP[:vUSE][y, t] <=
+            ramp_down_fraction(gen[y]) * EP[:eTotalCap][y]
+        end)
 
-	### Minimum and maximum power output constraints (Constraints #3-4)
+    ### Minimum and maximum power output constraints (Constraints #3-4)
     # Electrolyzers currently do not contribute to operating reserves, so there is not
     # special case (for OperationalReserves == 1) here.
     # Could allow them to contribute as a curtailable demand in future.
-    @constraints(EP, begin
-        # Minimum stable power generated per technology "y" at hour "t" Min_Power
-        [y in ELECTROLYZERS, t in 1:T], EP[:vUSE][y,t] >= min_power(gen[y])*EP[:eTotalCap][y]
+    @constraints(EP,
+        begin
+            # Minimum stable power generated per technology "y" at hour "t" Min_Power
+            [y in ELECTROLYZERS, t in 1:T],
+            EP[:vUSE][y, t] >= min_power(gen[y]) * EP[:eTotalCap][y]
 
-        # Maximum power generated per technology "y" at hour "t"
-        [y in ELECTROLYZERS, t in 1:T], EP[:vUSE][y,t] <= inputs["pP_Max"][y,t]*EP[:eTotalCap][y]
-    end)
+            # Maximum power generated per technology "y" at hour "t"
+            [y in ELECTROLYZERS, t in 1:T],
+            EP[:vUSE][y, t] <= inputs["pP_Max"][y, t] * EP[:eTotalCap][y]
+        end)
 
 	### Remove vP (electrolyzers do not produce power so vP = 0 for all periods)
 	@constraints(EP, begin
@@ -147,7 +156,6 @@ function electrolyzer!(EP::Model, inputs::Dict, setup::Dict)
 			sum(EP[:vP][y,t] for y=intersect(resources_in_zone_by_rid(gen,z), QUALIFIED_SUPPLY)) >= sum(EP[:vUSE][y,t] for y=intersect(resources_in_zone_by_rid(gen,z), ELECTROLYZERS)) + sum(EP[:vCHARGE][y,t] for y=intersect(resources_in_zone_by_rid(gen,z), QUALIFIED_SUPPLY, STORAGE))
 		)
 	end
-
 
 	### Energy Share Requirement Policy ###
 	# Since we're using vUSE to denote electrolyzer consumption, we subtract this from the eESR Energy Share Requirement balance to increase demand for clean resources if desired
@@ -177,5 +185,4 @@ function electrolyzer!(EP::Model, inputs::Dict, setup::Dict)
 		end)
 	@expression(EP, eTotalHydrogenValue, sum(eTotalHydrogenValueT[t] for t in 1:T))
 	EP[:eObj] -= eTotalHydrogenValue
-
 end

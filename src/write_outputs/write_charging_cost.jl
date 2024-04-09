@@ -1,17 +1,17 @@
 function write_charging_cost(path::AbstractString, inputs::Dict, setup::Dict, EP::Model)
-	gen = inputs["RESOURCES"]
+    gen = inputs["RESOURCES"]
 
-	regions = region.(gen)
-	clusters = cluster.(gen)
-	zones = zone_id.(gen)
+    regions = region.(gen)
+    clusters = cluster.(gen)
+    zones = zone_id.(gen)
 
-	G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
-	T = inputs["T"]     # Number of time steps (hours)
-	STOR_ALL = inputs["STOR_ALL"]
-	FLEX = inputs["FLEX"]
-	ELECTROLYZER = inputs["ELECTROLYZER"]
-	VRE_STOR = inputs["VRE_STOR"]
-	VS_STOR = !isempty(VRE_STOR) ? inputs["VS_STOR"] : []
+    G = inputs["G"]     # Number of resources (generators, storage, DR, and DERs)
+    T = inputs["T"]     # Number of time steps (hours)
+    STOR_ALL = inputs["STOR_ALL"]
+    FLEX = inputs["FLEX"]
+    ELECTROLYZER = inputs["ELECTROLYZER"]
+    VRE_STOR = inputs["VRE_STOR"]
+    VS_STOR = !isempty(VRE_STOR) ? inputs["VS_STOR"] : []
 
     price = locational_marginal_price(EP, inputs, setup)
 
