@@ -829,7 +829,6 @@ Returns the indices of all electrolyzer resources in the vector `rs`.
 electrolyzer(rs::Vector{T}) where {T <: AbstractResource} = findall(r -> isa(r,
         Electrolyzer),
     rs)
-electrolyzer_min_kt(r::Electrolyzer) = r.electrolyzer_min_kt
 hydrogen_mwh_per_tonne(r::Electrolyzer) = r.hydrogen_mwh_per_tonne
 hydrogen_price_per_tonne(r::Electrolyzer) = r.hydrogen_price_per_tonne
 
@@ -1022,8 +1021,7 @@ for attr in (:etainverter,
              :power_to_energy_dc,
              :hydrogen_mwh_per_tonne_elec,
              :hydrogen_price_per_tonne_elec,
-             :min_power_elec,
-             :electrolyzer_min_kt)
+             :min_power_elec)
     @eval @interface $attr default_zero VreStorage
 end
 
